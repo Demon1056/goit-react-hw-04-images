@@ -19,3 +19,12 @@ export async function searchImages(value, currentPage) {
     console.log(error);
   }
 }
+export const normalizeData = response =>
+  response.map(item => {
+    return {
+      id: item.id,
+      webformatURL: item.webformatURL,
+      tags: item.tags,
+      largeImageURL: item.largeImageURL,
+    };
+  });
