@@ -15,23 +15,7 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [lageImg, setLageImg] = useState('');
-  const [totalImages, setTotalImages] = useState(0);
 
-  useEffect(() => {
-    const changeTotalPages = totalImages => {
-      const newTotalPages = Math.ceil(totalImages / 12);
-      if (newTotalPages === totalPages) {
-        return;
-      }
-      return setTotalPages(newTotalPages);
-    };
-    changeTotalPages(totalImages);
-  }, [totalImages, totalPages]);
-  useEffect(() => {
-    if (totalPages === currentPage) {
-      Notify.info('This is the last page');
-    }
-  }, [totalPages, currentPage]);
   useEffect(() => {
     if (!findValue) {
       return;
@@ -40,10 +24,14 @@ export const App = () => {
       setIsLoading(true);
       try {
         const response = await searchImages(findValue, currentPage);
-        setTotalImages(response.total);
         if (response.hits.length < 1) {
           Notify.failure("We couldn't find any images with that value");
+          return;
         }
+        if (currentPage === 1) {
+          setTotalPages(Math.ceil(response.total / 12));
+        }
+
         const newData = normalizeData(response.hits);
         setData(prevData => [...prevData, ...newData]);
       } catch (error) {
@@ -57,6 +45,12 @@ export const App = () => {
     getData();
   }, [findValue, currentPage]);
 
+  useEffect(() => {
+    if (totalPages === currentPage) {
+      Notify.info('This is the last page');
+    }
+  }, [totalPages, currentPage]);
+
   const changeFindValue = query => {
     if (findValue === query) {
       return;
@@ -69,8 +63,11 @@ export const App = () => {
   const onClickLoadMore = () => {
     return setCurrentPage(prevCurrentPage => prevCurrentPage + 1);
   };
+
   const updateLageImage = () => setLageImg('');
+
   const onImageClick = modalImg => setLageImg(modalImg);
+
   const closeModal = e => {
     if (e.target === e.currentTarget) {
       return updateLageImage();
